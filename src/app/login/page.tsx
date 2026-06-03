@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -8,7 +7,7 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/dashboard";
@@ -16,7 +15,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -27,7 +25,6 @@ export default function LoginPage() {
     router.push(callbackUrl);
     router.refresh();
   }
-
   return (
     <main className="grid min-h-screen place-items-center px-5 py-10">
       <div className="w-full max-w-sm">
@@ -63,5 +60,13 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
