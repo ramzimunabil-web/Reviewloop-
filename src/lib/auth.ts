@@ -34,7 +34,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: user.id, email: user.email, name: user.name, image: user.image };
       },
     }),
-    // Magic-link sign in. Requires RESEND_API_KEY; harmless if unused.
     Resend({ from: process.env.EMAIL_FROM || "onboarding@resend.dev" }),
   ],
   callbacks: {
