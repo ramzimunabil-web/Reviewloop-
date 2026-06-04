@@ -5,21 +5,16 @@ import Resend from "next-auth/providers/resend";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { authConfig } from "@/lib/auth.config";
 
 const credsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 });
 
-const adminEmails = (process.env.ADMIN_EMAILS || "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },
@@ -36,24 +31,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     Resend({ from: process.env.EMAIL_FROM || "onboarding@resend.dev" }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user?.email) {
-        token.email = user.email;
-        token.isAdmin = adminEmails.includes(user.email.toLowerCase());
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub as string;
-        (session.user as any).isAdmin = Boolean(token.isAdmin);
-      }
-      return session;
-    },
-  },
 });
 
 export function isAdminEmail(email?: string | null) {
-  return !!email && adminEmails.includes(email.toLowerCase());
+  return !!email && (process.env.ADMIN_EMAILS || "").toLowerCase().includes(email.toLowerCase());
 }

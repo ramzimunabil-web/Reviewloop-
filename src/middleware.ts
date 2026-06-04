@@ -1,30 +1,7 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  const { pathname } = req.nextUrl;
-
-  const isProtected =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/admin");
-
-  const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register");
-
-  if (isProtected && !token) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
-
-  if (isAuthPage && token) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  return NextResponse.next();
-}
+export default NextAuth(authConfig).auth;
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico|r/).*)"],
